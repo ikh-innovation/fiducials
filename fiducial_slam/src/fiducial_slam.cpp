@@ -55,6 +55,8 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/highgui.hpp>
 
+#include "std_srvs/Trigger.h"
+
 #include <list>
 #include <string>
 
@@ -64,12 +66,13 @@ using namespace cv;
 class FiducialSlam {
 private:
     ros::Subscriber ft_sub;
+    ros::ServiceServer save_map_srv;
 
     bool use_fiducial_area_as_weight;
     double weighting_scale;
 
     void transformCallback(const fiducial_msgs::FiducialTransformArray::ConstPtr &msg);
-
+    bool saveMapCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 public:
     Map fiducialMap;
     int pose_publish_rate;
@@ -104,6 +107,15 @@ void FiducialSlam::transformCallback(const fiducial_msgs::FiducialTransformArray
     fiducialMap.update(observations, msg->header.stamp);
 }
 
+
+bool FiducialSlam::saveMapCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+{
+    res.success = fiducialMap.saveMap();
+    res.message = fiducialMap.mapFilename;
+    return true;
+}
+
+
 FiducialSlam::FiducialSlam(ros::NodeHandle &nh) : fiducialMap(nh) {
 
     // If set, use the fiducial area in pixels^2 as an indication of the
@@ -116,7 +128,7 @@ FiducialSlam::FiducialSlam(ros::NodeHandle &nh) : fiducialMap(nh) {
     nh.param<int>("pose_publish_rate", pose_publish_rate, 20);
 
     ft_sub = nh.subscribe("/fiducial_transforms", 1, &FiducialSlam::transformCallback, this);
-
+    save_map_srv = nh.advertiseService("save_map",&FiducialSlam::saveMapCallback, this);
     ROS_INFO("Fiducial Slam ready");
 }
 
