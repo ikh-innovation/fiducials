@@ -1,7 +1,7 @@
 <!-- Run the aruco_detect node -->
 <launch>
   <!-- namespace for camera input -->
-  <arg name="camera" default="/raspicam_node"/>
+  <arg name="camera" default="/usb_cam"/>
   <arg name="image" default="image"/>
   <arg name="transport" default="compressed"/>
   <arg name="fiducial_len" default="0.14"/>
