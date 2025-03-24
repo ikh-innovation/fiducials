@@ -539,6 +539,13 @@ void Map::handleAddFiducial(const std::vector<Observation> &obs) {
 bool Map::saveMap() { return saveMap(mapFilename); }
 
 bool Map::saveMap(std::string filename) {
+    
+    if (readOnly) {
+        ROS_WARN("Map is read-only. Not saving to file %s", filename.c_str());
+        return false;
+    }
+
+    
     ROS_INFO("Saving map with %d fiducials to file %s\n", (int)fiducials.size(), filename.c_str());
 
     FILE *fp = fopen(filename.c_str(), "w");
